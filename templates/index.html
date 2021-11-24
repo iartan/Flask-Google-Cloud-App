@@ -90,12 +90,14 @@
 										<h5 class="card-title">{{ time['timestamp'] }}</h5>
 										<p class="card-text">{{ time['task'] }}</p>
 										<!-- Field for new task -->
-										
+										<form method="post">
 										<div class="input-group">
-											<input class="form-control " placeholder="Neue Aufgabe"  name="new_task" type="text" />
-											<button style="width:15% " type="submit" class="btn btn-primary mb-3">+</button>
+											<input value="" class="form-control " placeholder="Neue Aufgabe" name="callback" type="text">
+											<input value="{{ loop.index }}" type="hidden" name="callback_index">
+											<button class="btn btn-primary mb-3" type="submit">+</button>
 										</div>
 										
+										</form>
 								
 										
 									</div>

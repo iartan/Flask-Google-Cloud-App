@@ -81,6 +81,14 @@ def root():
         'index.html',
         user_data=claims, error_message=error_message, times=times)
 
+@app.route('/', methods=['GET', 'POST'])
+def action():
+    input = request.form.get('callback')
+    input_index = request.form.get('callback_index')
+    print(input_index)
+    print(input)
+    return '', 204
+
 if __name__ == '__main__':
     # This is used when running locally only. When deploying to Google App
     # Engine, a webserver process such as Gunicorn will serve the app. This
