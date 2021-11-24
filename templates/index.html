@@ -30,7 +30,7 @@
 
 <body>
 	<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-		<a class="navbar-brand" href="/">Gif to Vid</a>
+		<a class="navbar-brand" href="/">Flask To-Do</a>
 		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
 			aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
 			<span class="navbar-toggler-icon"></span>
@@ -79,13 +79,33 @@
 					<dd>{{ user_data['name'] }}</dd>
 					<dt>Email</dt>
 					<dd>{{ user_data['email'] }}</dd>
-					<dt>Last 10 visits</dt>
-					<dd>
-						{% for time in times %}
-						<p>{{ time['timestamp'] }}</p>
-						<p>{{ time['task'] }}</p>
-						{% endfor %}
-					</dd>
+					<div class="row row-cols-1 row-cols-md-3 g-4">
+				
+
+							{% for time in times %}
+							<div class="col">
+								<div class="card h-100">
+									<img src="..." class="card-img-top" alt="...">
+									<div class="card-body">
+										<h5 class="card-title">{{ time['timestamp'] }}</h5>
+										<p class="card-text">{{ time['task'] }}</p>
+										<!-- Field for new task -->
+										
+										<div class="input-group">
+											<input class="form-control " placeholder="Neue Aufgabe"  name="new_task" type="text" />
+											<button style="width:15% " type="submit" class="btn btn-primary mb-3">+</button>
+										</div>
+										
+								
+										
+									</div>
+								</div>
+							</div>
+							<p></p>
+							<p></p>
+							{% endfor %}
+
+					</div>
 				</dl>
 				{% elif error_message %}
 				<p>Error: {{ error_message }}</p>
