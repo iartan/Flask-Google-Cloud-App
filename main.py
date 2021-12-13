@@ -28,9 +28,40 @@ app = Flask(__name__)
 datastore_client = datastore.Client()
 
 my_tasks = {
-            '1': {
-                'title': 'New List',
-            }
+            'to-do': [
+                {
+                    'title': 'Neue Liste',
+                    'color': 'light',
+                    'tasks': [
+                        {
+                            'name': 'Wash the car',
+                            'done': False
+                        },
+                        {
+                            'name': 'Repair washing machine',
+                            'done': True
+                        }
+                    ]
+                },
+                {
+                    'title': 'Zuhause',
+                    'color': 'dark',
+                    'tasks': [
+                        {
+                            'name': 'Swap Lightbulb',
+                            'done': False
+                        },
+                        {
+                            'name': 'Clean cellar',
+                            'done': True
+                        },
+                        {
+                            'name': 'Empty trash',
+                            'done': True
+                        }
+                    ]
+                }
+            ]
         }
 
 def store_time(email, todo):
@@ -103,18 +134,49 @@ def fetch_tasks(email, limit):
 
     # If there isn't any key for that email:
     try:
-        print(dict(my_tasks))
+        print(my_tasks)
         print(type(my_tasks))
-        return dict(my_tasks)
+        return my_tasks['to-do']
     except:
         print('Probably no key...')
         my_tasks = {
-            '1': {
-                'title': 'New List',
-            }
+            'to-do': [
+                {
+                    'title': 'Neue Liste',
+                    'color': 'light',
+                    'tasks': [
+                        {
+                            'name': 'Wash the car',
+                            'done': False
+                        },
+                        {
+                            'name': 'Repair washing machine',
+                            'done': True
+                        }
+                    ]
+                },
+                {
+                    'title': 'Zuhause',
+                    'color': 'dark',
+                    'tasks': [
+                        {
+                            'name': 'Swap Lightbulb',
+                            'done': False
+                        },
+                        {
+                            'name': 'Clean cellar',
+                            'done': True
+                        },
+                        {
+                            'name': 'Empty trash',
+                            'done': True
+                        }
+                    ]
+                }
+            ]
         }
         initial_store(email)
-        return dict(my_tasks)
+        return my_tasks['to-do']
 
 @app.route('/')
 def root():
@@ -155,7 +217,7 @@ def root():
         print('Ausloggen.')
         return render_template(
             'index.html',
-            user_data=claims, error_message=error_message, tasks=my_tasks, tasks_contents=tasks_contents)
+            user_data=claims, error_message=error_message, db=my_tasks, tasks_contents=tasks_contents)
 
     else:
         return render_template(
@@ -203,7 +265,7 @@ def action():
             error_message = str(exc)
             return render_template(
                 'index.html',
-                user_data=claims, error_message=error_message, tasks=my_tasks)
+                user_data=claims, error_message=error_message, db=my_tasks)
 
     return '', 204
 
