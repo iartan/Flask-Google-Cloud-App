@@ -16,5 +16,20 @@
 
 body {
   font-family: "helvetica", sans-serif;
-  text-align: center;
+  /* text-align: left; */
+  margin-bottom: 75px;
+  
 }
+
+input#q156 {
+  transform: scale(1.5);
+}
+
+input#q156:checked {
+  transform: scale(1.5);
+}
+
+.scroll {
+  overflow-y: auto;
+}
+

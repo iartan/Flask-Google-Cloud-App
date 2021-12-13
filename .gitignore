@@ -19,3 +19,7 @@ env/
 # Keys
 config.py
 firebase-config.js
+test.py
+
+# Images
+*.png

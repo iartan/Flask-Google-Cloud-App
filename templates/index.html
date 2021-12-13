@@ -19,7 +19,7 @@
 </html>
 
 <head>
-	<title>Datastore and Firebase Auth Example</title>
+	<title>Google Cloud Datastore und Firebase Auth Beispiel</title>
 	<script src="https://www.gstatic.com/firebasejs/ui/4.4.0/firebase-ui-auth.js"></script>
 	<link type="text/css" rel="stylesheet" href="https://www.gstatic.com/firebasejs/ui/4.4.0/firebase-ui-auth.css" />
 	<script src="{{ url_for('static', filename='script.js') }}"></script>
@@ -35,85 +35,151 @@
 			aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
 			<span class="navbar-toggler-icon"></span>
 		</button>
-
 		<div class="collapse navbar-collapse" id="navbarSupportedContent">
 			<ul class="navbar-nav mr-auto">
 				<li class="nav-item">
-					<a class="nav-link" href="/new-series">New series </a>
-				</li>
-				<li class="nav-item dropdown">
-					<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
-						data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-						Dropdown
-					</a>
-					<div class="dropdown-menu" aria-labelledby="navbarDropdown">
-						<a class="dropdown-item" href="#">Action</a>
-						<a class="dropdown-item" href="#">Another action</a>
-						<div class="dropdown-divider"></div>
-						<a class="dropdown-item" href="#">Something else here</a>
-					</div>
-				</li>
-				<li class="nav-item">
-					<a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
+					<a class="nav-link" href="#">Google Cloud Datastore und Firebase Auth Beispiel</a>
 				</li>
 			</ul>
 			<form class="form-inline my-2 my-lg-0">
-				<input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
-				<button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+				<input class="form-control mr-sm-2" type="search" placeholder="{{ user_data['email'] }}" aria-label="Search">
+				<button id="sign-out" hidden=true class="btn btn-outline-success my-2 my-sm-0" type="submit">Abmelden</button>
 			</form>
 		</div>
 	</nav>
-	<div class="container">
-		<main>
-			<h1>Datastore and Firebase Auth Example</h1>
+	<main>
+		<div class="container">
+				<div id="firebaseui-auth-container"></div>
+				<button id="sign-out" hidden=true>Sign Out</button>
 
-			<div id="firebaseui-auth-container"></div>
-
-			<button id="sign-out" hidden=true>Sign Out</button>
-
-			<div id="login-info" hidden=true>
-				<h2>Login info:</h2>
+				<div id="login-info" hidden=true></div>
 				{% if user_data %}
-				<dl>
-					<dt>Name</dt>
-					<dd>{{ user_data['name'] }}</dd>
-					<dt>Email</dt>
-					<dd>{{ user_data['email'] }}</dd>
+					<!-- Cards start here -->
 					<div class="row row-cols-1 row-cols-md-3 g-4">
-				
-
-							{% for time in times %}
-							<div class="col">
-								<div class="card h-100">
-									<img src="..." class="card-img-top" alt="...">
-									<div class="card-body">
-										<h5 class="card-title">{{ time['timestamp'] }}</h5>
-										<p class="card-text">{{ time['task'] }}</p>
-										<!-- Field for new task -->
-										<form method="post">
+						{% for key, value in tasks.items() %}
+						<div class="col" style="padding-top: 2rem;">
+							<div class="card bg-{% for key2, value2 in value.items() %}{% if key2 == 'color' %}{{ value2 }}{% if (value2 == 'warning') or (value2 == 'light') %} text-dark{% else %} text-light{% endif %}{% endif %}{% endfor %}" style="width: 15rem;">
+								<div class="card-header">
+									{% for key2, value2 in value.items() %}
+									{% if key2 == 'title' %}
+										{{ value2 }}
+									{% endif %}
+									{% endfor %}
+								</div>
+								
+								<ul class="list-group list-group-flush scroll " style="max-height: 15rem; min-height: 15rem;">
+								{% for key2, value2 in value.items() %}
+									{% if key2 != 'title' %}
+									<li class="list-group-item bg-{% for key2, value2 in value.items() %}{% if key2 == 'color' %}{{ value2 }}{% endif %}{% endfor %}" style="padding-left: -10px;">
+										&nbsp;
+										<input style="padding-right: 10px;"class="form-check-input me-1" type="checkbox" autocomplete="off" id="q156" name="quality[25]" value="">
+										{{value2}}
+									</li>
+									{% endif %}
+								{% endfor %}
+								</ul>
+								<div class="card-body" style="max-height: 5rem;">
+									<form method="post">
 										<div class="input-group">
-											<input value="" class="form-control " placeholder="Neue Aufgabe" name="callback" type="text">
-											<input value="{{ loop.index }}" type="hidden" name="callback_index">
+											<input value="" class="form-control " placeholder="Neue Aufgabe" name="input" type="text">
+											<input value="{{ loop.index }}" type="hidden" name="callback">
 											<button class="btn btn-primary mb-3" type="submit">+</button>
 										</div>
-										
-										</form>
-								
-										
-									</div>
+									</form>
 								</div>
 							</div>
-							<p></p>
-							<p></p>
-							{% endfor %}
-
+						</div>
+						
+						{% endfor %} 
+						<!-- New list card here -->
+						<div class="col" style="padding-top: 2rem;"> 
+							<div class="card h-100" style="width: 18rem;">
+								<div class="card-body text-white bg-primary mb-3" style="max-height: 8rem;">
+									<h5 class="card-title">Neue Liste erstellen</h5>
+									<p class="card-text">Namen eingeben und Farbe wählen</p>
+								</div>
+								<div class="card-body" style="max-height: 5rem; min-height: 15rem;">
+									<form method="post">
+										<div class="input-group">
+											<input value="" class="form-control " placeholder="Neue Liste" name="input" type="text">
+											<input value="new_list" type="hidden" name="callback">
+										</div>
+										<div class="input-group text-center">
+											<button value="primary" name="color" class="btn btn-primary btn-lg" type="submit" style="margin: 0.5rem;">+</button>
+											<button value="secondary" name="color" class="btn btn-secondary btn-lg" type="submit" style="margin: 0.5rem;">+</button>
+											<button value="success" name="color" class="btn btn-success btn-lg" type="submit" style="margin: 0.5rem;">+</button>
+											<button value="danger" name="color" class="btn btn-danger btn-lg" type="submit" style="margin: 0.5rem;">+</button>
+											<button value="warning" name="color" class="btn btn-warning btn-lg" type="submit" style="margin: 0.5rem;">+</button>
+											<button value="info" name="color" class="btn btn-info btn-lg" type="submit" style="margin: 0.5rem;">+</button>
+											<button value="light" name="color" class="btn btn-outline-dark btn-lg" type="submit" style="margin: 0.5rem;">+</button>
+											<button value="dark" name="color" class="btn btn-dark btn-lg" type="submit" style="margin: 0.5rem;">+</button>
+										</div>
+									</form>
+								</div>
+							</div>
+						</div>
 					</div>
-				</dl>
+					<div class="card text-white bg-primary mb-3" style="max-width: 18rem;">
+						<div class="card-header">Header</div>
+						<div class="card-body">
+						  <h5 class="card-title">Primary card title</h5>
+						  <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+						</div>
+					  </div>
+					  <div class="card text-white bg-secondary mb-3" style="max-width: 18rem;">
+						<div class="card-header">Header</div>
+						<div class="card-body">
+						  <h5 class="card-title">Secondary card title</h5>
+						  <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+						</div>
+					  </div>
+					  <div class="card text-white bg-success mb-3" style="max-width: 18rem;">
+						<div class="card-header">Header</div>
+						<div class="card-body">
+						  <h5 class="card-title">Success card title</h5>
+						  <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+						</div>
+					  </div>
+					  <div class="card text-white bg-danger mb-3" style="max-width: 18rem;">
+						<div class="card-header">Header</div>
+						<div class="card-body">
+						  <h5 class="card-title">Danger card title</h5>
+						  <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+						</div>
+					  </div>
+					  <div class="card text-dark bg-warning mb-3" style="max-width: 18rem;">
+						<div class="card-header">Header</div>
+						<div class="card-body">
+						  <h5 class="card-title">Warning card title</h5>
+						  <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+						</div>
+					  </div>
+					  <div class="card text-light bg-info mb-3" style="max-width: 18rem;">
+						<div class="card-header">Header</div>
+						<div class="card-body">
+						  <h5 class="card-title">Info card title</h5>
+						  <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+						</div>
+					  </div>
+					  <div class="card text-dark bg-light mb-3" style="max-width: 18rem;">
+						<div class="card-header">Header</div>
+						<div class="card-body">
+						  <h5 class="card-title">Light card title</h5>
+						  <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+						</div>
+					  </div>
+					  <div class="card text-white bg-dark mb-3" style="max-width: 18rem;">
+						<div class="card-header">Header</div>
+						<div class="card-body">
+						  <h5 class="card-title">Dark card title</h5>
+						  <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+						</div>
+					  </div>
+					{{ tasks }} 
 				{% elif error_message %}
-				<p>Error: {{ error_message }}</p>
+					<p>Error: {{ error_message }}</p>
 				{% endif %}
-			</div>
-	</div>
+		</div>
 	</main>
 	<!-- MOCK SNIPPET: DO NOT COPY -->
 	<!-- The core Firebase JS SDK is always required and must be listed first -->

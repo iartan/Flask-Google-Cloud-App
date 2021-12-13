@@ -14,7 +14,7 @@
 
 indexes:
 
-- kind: visit
+- kind: to-do-list
   ancestor: yes
   properties:
   - name: timestamp

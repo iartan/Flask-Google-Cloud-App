@@ -27,23 +27,94 @@ app = Flask(__name__)
 
 datastore_client = datastore.Client()
 
-def store_time(email, dt, task='cleaning'):
+my_tasks = {
+            '1': {
+                'title': 'New List',
+            }
+        }
+
+def store_time(email, todo):
     entity = datastore.Entity(key=datastore_client.key('User', email, 'visit'))
+    dt = datetime.datetime.now()
     entity.update({
         'timestamp': dt,
-        'task': task
+        'task': todo
     })
 
     datastore_client.put(entity)
 
-def fetch_times(email, limit):
-    ancestor = datastore_client.key('User', email)
-    query = datastore_client.query(kind='visit', ancestor=ancestor)
-    query.order = ['-timestamp']
+def store_task(email, task, task_list_index):
+    global my_tasks
 
-    times = query.fetch(limit=limit)
+    complete_key = datastore_client.key('to-do-list', email)
+    db_task = datastore.Entity(key=complete_key)
 
-    return times
+    dict = my_tasks
+    print(dict)
+
+    dict[task_list_index].update({ str(len(dict[task_list_index])): task})
+    print(len(dict[task_list_index]))
+    db_task.update(
+        dict
+    )
+    print(dict)
+    datastore_client.put(db_task)
+
+def store_task_list(email, name, color):
+    global my_tasks
+
+    complete_key = datastore_client.key('to-do-list', email)
+    db_task = datastore.Entity(key=complete_key)
+
+    dict = my_tasks
+    print(dict)
+
+    dict.update({ str(len(dict) + 1 ): { 'title': name, 'color': color }})
+
+    db_task.update(
+        dict
+    )
+    print(dict)
+    datastore_client.put(db_task)
+
+def initial_store(email=None, task=None):
+    global my_tasks
+
+    complete_key = datastore_client.key('to-do-list', email)
+    task = datastore.Entity(key=complete_key)
+
+    dict = my_tasks
+
+    task.update(
+        dict
+    )
+
+    datastore_client.put(task)
+
+def fetch_tasks(email, limit):
+    global my_tasks
+    # ancestor = datastore_client.key('User', email)
+    # query = datastore_client.query(ancestor=ancestor)
+    # query.order = ['-timestamp']
+
+    # times = query.fetch(limit=limit)
+    key = datastore_client.key('to-do-list', email)
+    my_tasks = datastore_client.get(key)
+
+    # If there isn't any key for that email:
+    try:
+        print(dict(my_tasks))
+        print(type(my_tasks))
+        return dict(my_tasks)
+    except:
+        print('Probably no key...')
+        my_tasks = {
+            '1': {
+                'title': 'New List',
+            }
+        }
+        initial_store(email)
+        return dict(my_tasks)
 
 @app.route('/')
 def root():
@@ -51,7 +122,8 @@ def root():
     id_token = request.cookies.get("token")
     error_message = None
     claims = None
-    times = None
+    global my_tasks
+    tasks_contents = None
 
     if id_token:
         try:
@@ -63,8 +135,11 @@ def root():
             claims = google.oauth2.id_token.verify_firebase_token(
                 id_token, firebase_request_adapter)
 
-            store_time(claims['email'], datetime.datetime.now())
-            times = fetch_times(claims['email'], 10)
+            # store_time(claims['email'], datetime.datetime.now())
+            my_tasks = fetch_tasks(claims['email'], 10)
+            # tasks_contents = tasks['board_1']
+            # tasks_contents = tasks_contents['2']
+            # tasks_contents = tasks_contents['board_1']
 
         except ValueError as exc:
             # This will be raised if the token is expired or any other
@@ -77,16 +152,59 @@ def root():
         # store_time(datetime.datetime.now())
         # times = fetch_times(10)
 
-    return render_template(
-        'index.html',
-        user_data=claims, error_message=error_message, times=times)
+        print('Ausloggen.')
+        return render_template(
+            'index.html',
+            user_data=claims, error_message=error_message, tasks=my_tasks, tasks_contents=tasks_contents)
+
+    else:
+        return render_template(
+            'index.html',
+            user_data=claims, error_message=error_message)
+
 
 @app.route('/', methods=['GET', 'POST'])
 def action():
-    input = request.form.get('callback')
-    input_index = request.form.get('callback_index')
-    print(input_index)
-    print(input)
+    global my_tasks
+
+    id_token = request.cookies.get("token")
+    error_message = None
+    claims = None
+    times = None
+    if id_token:
+        try:
+            claims = google.oauth2.id_token.verify_firebase_token(
+                id_token, firebase_request_adapter)
+
+            input = request.form.get('input')
+            callback = request.form.get('callback')
+            color = request.form.get('color')
+
+            print(input)
+            # print(type(input))
+            print(callback)
+            # print(type(callback))
+            print(color)
+            print(type(color))
+
+            if input == '' or input == None:
+                print('Input is empty.')
+            elif callback == 'new_list':
+                print('Neue Liste erstellen.')
+                store_task_list(claims['email'], input, color)
+            else:
+                store_task(claims['email'], input, callback)
+                print('Neuer Task.')
+                pass
+
+        except ValueError as exc:
+            # This will be raised if the token is expired or any other
+            # verification checks fail.
+            error_message = str(exc)
+            return render_template(
+                'index.html',
+                user_data=claims, error_message=error_message, tasks=my_tasks)
+
     return '', 204
 
 if __name__ == '__main__':
