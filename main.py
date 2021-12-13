@@ -74,39 +74,36 @@ def store_time(email, todo):
 
     datastore_client.put(entity)
 
-def store_task(email, task, task_list_index):
+def store_task(email, task, list_index):
     global my_tasks
 
-    complete_key = datastore_client.key('to-do-list', email)
-    db_task = datastore.Entity(key=complete_key)
+    my_tasks = fetch_tasks(email)
 
-    dict = my_tasks
-    print(dict)
+    new_task = {
+        'name': task,
+        'done': False
+    }
 
-    dict[task_list_index].update({ str(len(dict[task_list_index])): task})
-    print(len(dict[task_list_index]))
-    db_task.update(
-        dict
-    )
-    print(dict)
-    datastore_client.put(db_task)
+    my_tasks['to-do'][int(list_index) - 1]['tasks'].append(new_task)
+    
+    # Save dict with new task to datastore.
+    datastore_client.put(my_tasks)
 
 def store_task_list(email, name, color):
     global my_tasks
 
-    complete_key = datastore_client.key('to-do-list', email)
-    db_task = datastore.Entity(key=complete_key)
+    my_tasks = fetch_tasks(email)
 
-    dict = my_tasks
-    print(dict)
+    new_list = {
+                'title': name,
+                'color': color,
+                'tasks': []
+            }
 
-    dict.update({ str(len(dict) + 1 ): { 'title': name, 'color': color }})
+    my_tasks['to-do'].append(new_list)
 
-    db_task.update(
-        dict
-    )
-    print(dict)
-    datastore_client.put(db_task)
+    # Write new dict to datastore.
+    datastore_client.put(my_tasks)
 
 def initial_store(email=None, task=None):
     global my_tasks
@@ -122,7 +119,7 @@ def initial_store(email=None, task=None):
 
     datastore_client.put(task)
 
-def fetch_tasks(email, limit):
+def fetch_tasks(email):
     global my_tasks
     # ancestor = datastore_client.key('User', email)
     # query = datastore_client.query(ancestor=ancestor)
@@ -136,7 +133,7 @@ def fetch_tasks(email, limit):
     try:
         print(my_tasks)
         print(type(my_tasks))
-        return my_tasks['to-do']
+        return my_tasks
     except:
         print('Probably no key...')
         my_tasks = {
@@ -176,7 +173,7 @@ def fetch_tasks(email, limit):
             ]
         }
         initial_store(email)
-        return my_tasks['to-do']
+        return my_tasks
 
 @app.route('/')
 def root():
@@ -198,7 +195,8 @@ def root():
                 id_token, firebase_request_adapter)
 
             # store_time(claims['email'], datetime.datetime.now())
-            my_tasks = fetch_tasks(claims['email'], 10)
+            my_tasks = fetch_tasks(claims['email'])
+            my_tasks = my_tasks['to-do']
             # tasks_contents = tasks['board_1']
             # tasks_contents = tasks_contents['2']
             # tasks_contents = tasks_contents['board_1']
@@ -247,7 +245,7 @@ def action():
             print(callback)
             # print(type(callback))
             print(color)
-            print(type(color))
+
 
             if input == '' or input == None:
                 print('Input is empty.')
