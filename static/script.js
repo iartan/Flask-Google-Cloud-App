@@ -68,7 +68,7 @@ window.addEventListener('load', function () {
     }
   }, function (error) {
     console.log(error);
-    alert('Unable to log in: ' + error)
+    alert('Unable to log in BECAUSE: ' + error)
   });
 });
 // [END gae_python3_log]

@@ -89,6 +89,8 @@ def store_task(email, task, list_index):
     # Save dict with new task to datastore.
     datastore_client.put(my_tasks)
 
+    my_tasks = my_tasks['to-do']
+
 def store_task_list(email, name, color):
     global my_tasks
 
@@ -105,6 +107,28 @@ def store_task_list(email, name, color):
     # Write new dict to datastore.
     datastore_client.put(my_tasks)
 
+    my_tasks = my_tasks['to-do']
+
+def done_change(email, params):
+    global my_tasks
+
+    my_tasks = fetch_tasks(email)
+    
+    status = my_tasks['to-do'][int(params[1]) - 1]['tasks'][int(params[0]) - 1]['done']
+    if status == True:
+        status = False
+    else:
+        status = True
+    
+    print(my_tasks['to-do'][int(params[1]) - 1]['tasks'][int(params[0]) - 1])
+    my_tasks['to-do'][int(params[1]) - 1]['tasks'][int(params[0]) - 1].update( { 'done': status } )
+    print(my_tasks['to-do'][int(params[1]) - 1]['tasks'][int(params[0]) - 1])
+
+    # Save dict with new task to datastore.
+    datastore_client.put(my_tasks)
+
+    my_tasks = my_tasks['to-do']
+
 def initial_store(email=None, task=None):
     global my_tasks
 
@@ -119,6 +143,8 @@ def initial_store(email=None, task=None):
 
     datastore_client.put(task)
 
+    my_tasks = my_tasks['to-do']
+
 def fetch_tasks(email):
     global my_tasks
     # ancestor = datastore_client.key('User', email)
@@ -131,7 +157,6 @@ def fetch_tasks(email):
 
     # If there isn't any key for that email:
     try:
-        print(my_tasks)
         print(type(my_tasks))
         return my_tasks
     except:
@@ -182,7 +207,6 @@ def root():
     error_message = None
     claims = None
     global my_tasks
-    tasks_contents = None
 
     if id_token:
         try:
@@ -197,14 +221,16 @@ def root():
             # store_time(claims['email'], datetime.datetime.now())
             my_tasks = fetch_tasks(claims['email'])
             my_tasks = my_tasks['to-do']
-            # tasks_contents = tasks['board_1']
-            # tasks_contents = tasks_contents['2']
-            # tasks_contents = tasks_contents['board_1']
+
 
         except ValueError as exc:
             # This will be raised if the token is expired or any other
             # verification checks fail.
+            print('Something wrong here, maybe token expired, gonna reset.')
             error_message = str(exc)
+            return render_template(
+                'index.html',
+                user_data=claims, error_message=error_message, db=my_tasks)
 
         # Record and fetch the recent times a logged-in user has accessed
         # the site. This is currently shared amongst all users, but will be
@@ -215,7 +241,7 @@ def root():
         print('Ausloggen.')
         return render_template(
             'index.html',
-            user_data=claims, error_message=error_message, db=my_tasks, tasks_contents=tasks_contents)
+            user_data=claims, error_message=error_message, db=my_tasks)
 
     else:
         return render_template(
@@ -239,19 +265,23 @@ def action():
             input = request.form.get('input')
             callback = request.form.get('callback')
             color = request.form.get('color')
-
+            done = request.form.get('done')
+            if done:
+                            done = eval(done)
+           
             print(input)
-            # print(type(input))
             print(callback)
-            # print(type(callback))
+            print(done)
             print(color)
 
-
-            if input == '' or input == None:
+            if input == '' or input == None and done == None:
                 print('Input is empty.')
             elif callback == 'new_list':
                 print('Neue Liste erstellen.')
                 store_task_list(claims['email'], input, color)
+            elif done != None:
+                print('Change done status.')
+                done_change(claims['email'], done)
             else:
                 store_task(claims['email'], input, callback)
                 print('Neuer Task.')
@@ -265,7 +295,9 @@ def action():
                 'index.html',
                 user_data=claims, error_message=error_message, db=my_tasks)
 
-    return '', 204
+    return render_template(
+            'index.html',
+            user_data=claims, error_message=error_message, db=my_tasks)
 
 if __name__ == '__main__':
     # This is used when running locally only. When deploying to Google App

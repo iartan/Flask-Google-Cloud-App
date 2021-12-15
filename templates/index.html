@@ -48,183 +48,84 @@
 	</nav>
 	<main>
 		<div class="container">
-				<div id="firebaseui-auth-container"></div>
-				<button id="sign-out" hidden=true>Sign Out</button>
+			<div id="firebaseui-auth-container"></div>
+			<button id="sign-out" hidden=true>Sign Out</button>
 
-				<div id="login-info" hidden=true>
-				{% if user_data %}
-					<!-- Cards start here -->
-					<div class="row row-cols-1 row-cols-md-4 g-5" style="margin-top: 3rem;">
-						{% for list in db %}
-						<div class="col">
-							<div class="card bg-{{ list['color'] }} {% if (list['color'] == 'light') or (list['color'] == 'warning') %}text-dark{% else %}text-light{% endif %}">
-								<div class="card-header">
-									{{ list['color'] }}
-									{% for key, value in list.items() %}
-									{% if key == 'title' %}
-										{{ value }}
-									{% endif %}
-									{% endfor %}
-								</div>
-								
-								<ul class="list-group list-group-flush scroll " style="max-height: 15rem; min-height: 15rem;">
-								{% for key, value in list.items() %}
-									{% if key == 'tasks' %}
-										{% for item in value %}
-									<li class="list-group-item bg-{{ list['color'] }}" style="padding-left: -10px;">
-										
-										<input value="{{ loop.index }}" type="hidden" name="task_index">
-										<!-- <input style="padding-right: 10px;" class="form-check-input me-1" type="checkbox" autocomplete="off" id="q156" name="quality[25]" value=""> -->
-										<div class="form-check text-decoration-line-through">
-											<input class="form-check-input fs-5" type="checkbox" value="" {% if item['done'] == True %}id="flexCheckChecked" checked{% else %}id="flexCheckDefault"{% endif %}>
-											<label class="form-check-label {% if item['done'] == True %}text-decoration-line-through text-muted{% endif %} {% if (list['color'] == 'light') or (list['color'] == 'warning') %}text-dark{% else %}text-light{% endif %}" for="flexCheckDefault">
+			<div id="login-info" hidden=true>
+			{% if user_data %}
+				<!-- Cards start here -->
+				<div class="row row-cols-1 row-cols-md-4 g-5" style="margin-top: 3rem;">
+					{% for list in db %}
+					{% set outer_loop = loop %}
+					<div class="col">
+						<div class="card bg-{{ list['color'] }} {% if (list['color'] == 'light') or (list['color'] == 'warning') %}text-dark{% else %}text-light{% endif %}">
+							<div class="card-header">
+								{{ list['title'] }}
+							</div>
+							
+							<ul class="list-group list-group-flush scroll " style="max-height: 15rem; min-height: 15rem;">
+							
+								{% for item in list['tasks'] %}
+								<li class="list-group-item bg-{{ list['color'] }}" style="padding-left: -10px;">
+									
+									<!-- <input style="padding-right: 10px;" class="form-check-input me-1" type="checkbox" autocomplete="off" id="q156" name="quality[25]" value=""> -->
+									<form method="post">
+										<div class="form-check">
+											<input value="({{ loop.index }}, {{ outer_loop.index }}, {{ item['done'] }})" type="hidden" name="done">												
+											<input class="form-check-input fs-5" type="checkbox" onchange="this.form.submit()" value="option{{ loop.index }}" {% if item['done'] == True %}id="flexCheckChecked{{ loop.index }}" checked{% else %}id="flexCheckDefault{{ loop.index }}"{% endif %}>
+											<label class="form-check-label {% if item['done'] == True %}text-decoration-line-through{% endif %} {% if (list['color'] == 'light') or (list['color'] == 'warning') %}text-dark{% else %}text-light{% endif %}" for="flexCheckDefault">
 												{{ item['name'] }}
 											</label>
 										</div>
-									</li>
-									{% endfor %}
-									{% endif %}
+									</form>
+								</li>
 								{% endfor %}
-								</ul>
-								<div class="card-body" style="max-height: 5rem;">
-									<form method="post">
-										<div class="input-group">
-											<input value="" class="form-control " placeholder="Neue Aufgabe" name="input" type="text">
-											<input value="{{ loop.index }}" type="hidden" name="callback">
-											<button class="btn btn-primary mb-3" type="submit">+</button>
-										</div>
-									</form>
-								</div>
-							</div>
-						</div>
-						
-						{% endfor %} 
-						<!-- New list card here -->
-						<div class="col">
-							<div class="card">
-								<div class="card-header bg-primary text-light">
-									<p class="fs-5">Neue Liste erstellen</p>
-									<p class="fs-6 fst-italic">Namen eingeben und Farbe auswählen</p>
-								</div>
-								<div class="card-body" style="max-height: 5rem; min-height: 15rem;">
-									<form method="post">
-										<div class="input-group">
-											<input value="" class="form-control " placeholder="Neue Liste" name="input" type="text">
-											<input value="new_list" type="hidden" name="callback">
-										</div>
-										<div class="text-center">
-											<button value="primary" name="color" class="btn btn-primary btn-lg" type="submit" style="margin: 0.5rem;">+</button>
-											<button value="secondary" name="color" class="btn btn-secondary btn-lg" type="submit" style="margin: 0.5rem;">+</button>
-											<button value="success" name="color" class="btn btn-success btn-lg" type="submit" style="margin: 0.5rem;">+</button>
-											<button value="danger" name="color" class="btn btn-danger btn-lg" type="submit" style="margin: 0.5rem;">+</button>
-											<button value="warning" name="color" class="btn btn-warning btn-lg" type="submit" style="margin: 0.5rem;">+</button>
-											<button value="info" name="color" class="btn btn-info btn-lg" type="submit" style="margin: 0.5rem;">+</button>
-											<button value="light" name="color" class="btn btn-outline-dark btn-lg" type="submit" style="margin: 0.5rem;">+</button>
-											<button value="dark" name="color" class="btn btn-dark btn-lg" type="submit" style="margin: 0.5rem;">+</button>
-										</div>
-									</form>
-								</div>
+								
+							</ul>
+							<div class="card-body" style="max-height: 5rem;">
+								<form method="post">
+									<div class="input-group">
+										<input value="" class="form-control " placeholder="Neue Aufgabe" name="input" type="text">
+										<input value="{{ loop.index }}" type="hidden" name="callback">
+										<button class="btn btn-primary mb-3" type="submit">+</button>
+									</div>
+								</form>
 							</div>
 						</div>
 					</div>
-					{{ db }} 
-				{% elif error_message %}
-					<p>Error: {{ error_message }}</p>
-				{% endif %}
-				<div class="card text-white bg-primary mb-3" style="max-width: 18rem;">
-					<div class="card-header">Header</div>
-					<div class="card-body">
-					  <h5 class="card-title">Primary card title</h5>
-					  <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-					</div>
-				  </div>
-				  <div class="card text-white bg-secondary mb-3" style="max-width: 18rem;">
-					<div class="card-header">Header</div>
-					<div class="card-body">
-					  <h5 class="card-title">Secondary card title</h5>
-					  <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-					</div>
-				  </div>
-				  <div class="card text-white bg-success mb-3" style="max-width: 18rem;">
-					<div class="card-header">Header</div>
-					<div class="card-body">
-					  <h5 class="card-title">Success card title</h5>
-					  <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-					</div>
-				  </div>
-				  <div class="card text-white bg-danger mb-3" style="max-width: 18rem;">
-					<div class="card-header">Header</div>
-					<div class="card-body">
-					  <h5 class="card-title">Danger card title</h5>
-					  <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-					</div>
-				  </div>
-				  <div class="card text-dark bg-warning mb-3" style="max-width: 18rem;">
-					<div class="card-header">Header</div>
-					<div class="card-body">
-					  <h5 class="card-title">Warning card title</h5>
-					  <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-					</div>
-				  </div>
-				  <div class="card text-dark bg-info mb-3" style="max-width: 18rem;">
-					<div class="card-header">Header</div>
-					<div class="card-body">
-					  <h5 class="card-title">Info card title</h5>
-					  <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-					</div>
-				  </div>
-				  <div class="card text-dark bg-light mb-3" style="max-width: 18rem;">
-					<div class="card-header">Header</div>
-					<div class="card-body">
-					  <h5 class="card-title">Light card title</h5>
-					  <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-					</div>
-				  </div>
-				  <div class="card text-white bg-dark mb-3" style="max-width: 18rem;">
-					<div class="card-header">Header</div>
-					<div class="card-body">
-					  <h5 class="card-title">Dark card title</h5>
-					  <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-					</div>
-				  </div>
-				  <div class="row row-cols-1 row-cols-md-3 g-4">
+					
+					{% endfor %} 
+					<!-- New list card here -->
 					<div class="col">
-					  <div class="card">
-						<img src="..." class="card-img-top" alt="...">
-						<div class="card-body">
-						  <h5 class="card-title">Card title</h5>
-						  <p class="card-text">This is a longer card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+						<div class="card">
+							<div class="card-header bg-primary text-light">
+								<p class="fs-5">Neue Liste erstellen</p>
+								<p class="fs-6 fst-italic">Namen eingeben und Farbe auswählen</p>
+							</div>
+							<div class="card-body" style="max-height: 5rem; min-height: 15rem;">
+								<form method="post">
+									<div class="input-group">
+										<input value="" class="form-control " placeholder="Neue Liste" name="input" type="text">
+										<input value="new_list" type="hidden" name="callback">
+									</div>
+									<div class="text-center">
+										<button value="primary" name="color" class="btn btn-primary btn-lg" type="submit" style="margin: 0.5rem;">+</button>
+										<button value="secondary" name="color" class="btn btn-secondary btn-lg" type="submit" style="margin: 0.5rem;">+</button>
+										<button value="success" name="color" class="btn btn-success btn-lg" type="submit" style="margin: 0.5rem;">+</button>
+										<button value="danger" name="color" class="btn btn-danger btn-lg" type="submit" style="margin: 0.5rem;">+</button>
+										<button value="warning" name="color" class="btn btn-warning btn-lg" type="submit" style="margin: 0.5rem;">+</button>
+										<button value="info" name="color" class="btn btn-info btn-lg" type="submit" style="margin: 0.5rem;">+</button>
+										<button value="light" name="color" class="btn btn-outline-dark btn-lg" type="submit" style="margin: 0.5rem;">+</button>
+										<button value="dark" name="color" class="btn btn-dark btn-lg" type="submit" style="margin: 0.5rem;">+</button>
+									</div>
+								</form>
+							</div>
 						</div>
-					  </div>
 					</div>
-					<div class="col">
-					  <div class="card">
-						<img src="..." class="card-img-top" alt="...">
-						<div class="card-body">
-						  <h5 class="card-title">Card title</h5>
-						  <p class="card-text">This is a longer card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
-						</div>
-					  </div>
-					</div>
-					<div class="col">
-					  <div class="card">
-						<img src="..." class="card-img-top" alt="...">
-						<div class="card-body">
-						  <h5 class="card-title">Card title</h5>
-						  <p class="card-text">This is a longer card with supporting text below as a natural lead-in to additional content.</p>
-						</div>
-					  </div>
-					</div>
-					<div class="col">
-					  <div class="card">
-						<img src="..." class="card-img-top" alt="...">
-						<div class="card-body">
-						  <h5 class="card-title">Card title</h5>
-						  <p class="card-text">This is a longer card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
-						</div>
-					  </div>
-					</div>
-				  </div>
+				</div>
+			{% elif error_message %}
+				<p>Error: {{ error_message }}</p>
+			{% endif %}
 			</div>
 		</div>
 	</main>
@@ -233,7 +134,6 @@
 	<script src="https://www.gstatic.com/firebasejs/7.14.5/firebase-app.js"></script>
 
 	<!-- TODO: Add SDKs for Firebase products that you want to use
-	
      https://firebase.google.com/docs/web/setup#available-libraries -->
 
 	<script src="https://www.gstatic.com/firebasejs/7.8.0/firebase-auth.js"></script>
