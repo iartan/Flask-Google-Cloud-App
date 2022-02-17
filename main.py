@@ -34,7 +34,7 @@ my_tasks = {
                     'color': 'dark',
                     'tasks': [
                         {
-                            'name': 'Wash the car',
+                            'name': 'Auto waschen',
                             'done': False
                         }
                     ]

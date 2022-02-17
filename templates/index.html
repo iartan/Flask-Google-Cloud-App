@@ -58,7 +58,7 @@
 				<div class="row row-cols-1 row-cols-md-4 g-5" style="margin-top: 3rem;">
 					{% for list in db %}
 					{% set outer_loop = loop %}
-					<div class="col">
+					<div class="col" style="min-width: 15rem;">
 						<div class="card bg-{{ list['color'] }} {% if (list['color'] == 'light') or (list['color'] == 'warning') %}text-dark{% else %}text-light{% endif %}">
 							<div class="card-header">
 								{{ list['title'] }}
@@ -94,7 +94,7 @@
 					</div>
 					{% endfor %} 
 					<!-- New list card here -->
-					<div class="col">
+					<div class="col" style="min-width: 15rem;">
 						<div class="card">
 							<div class="card-header bg-primary text-light">
 								<p class="fs-5">Neue Liste erstellen</p>
