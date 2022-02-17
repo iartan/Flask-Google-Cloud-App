@@ -30,34 +30,12 @@ datastore_client = datastore.Client()
 my_tasks = {
             'to-do': [
                 {
-                    'title': 'Neue Liste',
-                    'color': 'light',
+                    'title': 'Meine Liste',
+                    'color': 'dark',
                     'tasks': [
                         {
                             'name': 'Wash the car',
                             'done': False
-                        },
-                        {
-                            'name': 'Repair washing machine',
-                            'done': True
-                        }
-                    ]
-                },
-                {
-                    'title': 'Zuhause',
-                    'color': 'dark',
-                    'tasks': [
-                        {
-                            'name': 'Swap Lightbulb',
-                            'done': False
-                        },
-                        {
-                            'name': 'Clean cellar',
-                            'done': True
-                        },
-                        {
-                            'name': 'Empty trash',
-                            'done': True
                         }
                     ]
                 }
@@ -129,74 +107,54 @@ def done_change(email, params):
 
     my_tasks = my_tasks['to-do']
 
-def initial_store(email=None, task=None):
+def initial_store(email):
     global my_tasks
+    print('Calling initial store.')
 
     complete_key = datastore_client.key('to-do-list', email)
     task = datastore.Entity(key=complete_key)
 
-    dict = my_tasks
-
-    task.update(
-        dict
-    )
-
-    datastore_client.put(task)
-
-    my_tasks = my_tasks['to-do']
-
-def fetch_tasks(email):
-    global my_tasks
-    # ancestor = datastore_client.key('User', email)
-    # query = datastore_client.query(ancestor=ancestor)
-    # query.order = ['-timestamp']
-
-    # times = query.fetch(limit=limit)
-    key = datastore_client.key('to-do-list', email)
-    my_tasks = datastore_client.get(key)
-
-    # If there isn't any key for that email:
-    try:
-        print(type(my_tasks))
-        return my_tasks
-    except:
-        print('Probably no key...')
-        my_tasks = {
+    my_tasks = {
             'to-do': [
                 {
-                    'title': 'Neue Liste',
-                    'color': 'light',
+                    'title': 'Meine Liste',
+                    'color': 'dark',
                     'tasks': [
                         {
                             'name': 'Wash the car',
                             'done': False
-                        },
-                        {
-                            'name': 'Repair washing machine',
-                            'done': True
-                        }
-                    ]
-                },
-                {
-                    'title': 'Zuhause',
-                    'color': 'dark',
-                    'tasks': [
-                        {
-                            'name': 'Swap Lightbulb',
-                            'done': False
-                        },
-                        {
-                            'name': 'Clean cellar',
-                            'done': True
-                        },
-                        {
-                            'name': 'Empty trash',
-                            'done': True
                         }
                     ]
                 }
             ]
         }
+
+    task.update(my_tasks)
+
+    datastore_client.put(task)
+
+    return my_tasks
+
+def fetch_tasks(email):
+    global my_tasks
+
+    # ancestor = datastore_client.key('User', email)
+    # query = datastore_client.query(ancestor=ancestor)
+    # query.order = ['-timestamp']
+
+    # times = query.fetch(limit=limit)
+    try:
+        key = datastore_client.key('to-do-list', email)
+        my_tasks = datastore_client.get(key)
+        print(email)
+        if my_tasks == None:
+            initial_store(email)
+            print('Stored.')
+        
+        return my_tasks
+
+    except:
+        print('Probably no key...')
         initial_store(email)
         return my_tasks
 
@@ -220,6 +178,8 @@ def root():
 
             # store_time(claims['email'], datetime.datetime.now())
             my_tasks = fetch_tasks(claims['email'])
+            print(f'Type of task is {type(my_tasks)}')
+            print(my_tasks)
             my_tasks = my_tasks['to-do']
 
 
